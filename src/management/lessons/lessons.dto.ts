@@ -39,6 +39,10 @@ export class CreateLessonDto {
   @IsString()
   @ApiProperty({ description: "Danh mục" })
   category?: string;
+
+  @IsNumber()
+  @ApiProperty({ description: "Cấp độ bài học" })
+  level?: number;
 }
 
 export class UpdateLessonDto {
@@ -90,6 +94,10 @@ export class LessonResponseDto {
   @ApiPropertyOptional({ description: "Danh mục" })
   category?: string;
 
+  @IsNumber()
+  @ApiPropertyOptional({ description: "Cấp độ bài học" })
+  level?: number;
+
   created_date: Date;
   modified_date: Date;
   deleted_date: Date;
@@ -101,6 +109,7 @@ export class LessonResponseDto {
     this.content = lesson.content;
     this.status_id = lesson.status;
     this.category = lesson.category;
+    this.level = lesson.level;
     this.created_date = lesson.created_date;
     this.modified_date = lesson.modified_date;
     this.deleted_date = lesson.deleted_date;

@@ -25,6 +25,9 @@ export class Lesson {
   @Column()
   status_id: number;
 
+  @Column()
+  level: number;
+
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   created_date: Date;
 

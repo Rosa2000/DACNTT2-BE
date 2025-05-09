@@ -31,7 +31,7 @@ export class LessonsService {
       where: { title: dto.title, status_id: 1 }
     });
     if (existingLesson) {
-      throw new BadRequestException("Lesson with this title already exists");
+      throw new BadRequestException("Đã tồn tại bài học với tiêu đề này");
     }
 
     const lesson = this.lessonRepository.create({
@@ -99,7 +99,7 @@ export class LessonsService {
       where: { id, status_id: 1 }
     });
     if (!lesson) {
-      throw new NotFoundException(`Lesson with ID ${id} not found`);
+      throw new NotFoundException(`Không tìm thấy bài học có ID ${id}`);
     }
 
     await this.lessonRepository.update(
@@ -114,7 +114,7 @@ export class LessonsService {
       where: { id, status_id: 1 }
     });
     if (!lesson) {
-      throw new NotFoundException(`Lesson with ID ${id} not found`);
+      throw new NotFoundException(`Không tìm thấy bài học có ID ${id}`);
     }
     await this.lessonRepository.update(
       { id },
@@ -134,7 +134,7 @@ export class LessonsService {
       where: { id: dto.lesson_id }
     });
     if (!lesson) {
-      throw new NotFoundException(`Lesson with ID ${dto.lesson_id} not found`);
+      throw new NotFoundException(`Không tìm thấy bài học có ID ${dto.lesson_id}`);
     }
 
     // Kiểm tra trạng thái hợp lệ (3, 4, 5)
