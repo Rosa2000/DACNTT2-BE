@@ -11,12 +11,20 @@ export class GetDataLessonDto {
   pageSize: number;
 
   @IsString()
-  @ApiPropertyOptional({ required: false })
+  @ApiPropertyOptional({ description: "Từ khóa tìm kiếm theo tiêu đề", required: false })
   filters?: string;
 
   @IsNumber()
-  @ApiPropertyOptional({ required: false })
+  @ApiPropertyOptional({ description: "ID bài học cụ thể", required: false })
   id?: number;
+
+  @IsString()
+  @ApiPropertyOptional({ description: "Lọc theo danh mục", required: false })
+  category?: string;
+
+  @IsNumber()
+  @ApiPropertyOptional({ description: "Lọc theo cấp độ", required: false })
+  level?: number;
 }
 
 export class CreateLessonDto {

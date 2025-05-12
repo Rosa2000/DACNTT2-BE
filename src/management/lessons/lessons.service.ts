@@ -47,7 +47,9 @@ export class LessonsService {
     page: number,
     pageSize: number,
     filters?: string,
-    id?: number
+    id?: number,
+    category?: string,
+    level?: number
   ): Promise<any> {
     try {
       page = Math.max(1, page);
@@ -62,8 +64,8 @@ export class LessonsService {
       if (filters) {
         queryBuilder.andWhere(
           new Brackets((qb) => {
-            qb.orWhere("lessons.title = :title", {
-              title: filters
+            qb.orWhere("lessons.title LIKE :title", {
+              title: `%${filters}%`
             });
           })
         );
@@ -71,6 +73,14 @@ export class LessonsService {
 
       if (id) {
         queryBuilder.andWhere("lessons.id = :id", { id });
+      }
+
+      if (category) {
+        queryBuilder.andWhere("lessons.category = :category", { category });
+      }
+
+      if (level) {
+        queryBuilder.andWhere("lessons.level = :level", { level });
       }
 
       const [lessonListData, total] = await queryBuilder
