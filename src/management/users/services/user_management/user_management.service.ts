@@ -7,7 +7,7 @@ import {
   UnauthorizedException
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, In, Not } from "typeorm";
+import { Repository, In, Not, Brackets } from "typeorm";
 import * as bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
 import { responseMessage } from "src/utils/constant";
@@ -41,63 +41,63 @@ export class UserManagementService {
   async findListUser(
     page: number,
     pageSize: number,
-    filters?: string,
+    filters: any,
     groupId?: number
   ): Promise<any> {
     try {
       page = Math.max(1, page);
 
-      // Tìm user với quan hệ user_group
-      const query: any = {
-        status_id: { $ne: 2 } // MongoDB $ne thay cho !=
-      };
+      let userQueryBuilder = this.userRepository
+        .createQueryBuilder("users")
+        .leftJoinAndSelect("users.user_group", "user_group")
+        .where("users.status_id != :statusId", { statusId: 2 });
+      if (filters) {
+        userQueryBuilder = userQueryBuilder.andWhere(
+          new Brackets((qb) => {
+            qb.where("users.fullname LIKE :filters", {
+              filters: `%${filters}%`
+            })
+              .orWhere("users.username LIKE :filters", {
+                filters: `%${filters}%`
+              })
+              .orWhere("users.email LIKE :filters", { filters: `%${filters}%` })
+              .orWhere("TRIM(users.phone_number) = :phoneNumber", {
+                phoneNumber: filters.trim()
+              })
+              .orWhere("users.id LIKE :filters", { filters: `%${filters}%` });
+          })
+        );
+      }
 
       if (groupId) {
-        const usersInGroup = await this.userGroupRepository.find({
-          where: { group_id: groupId }
+        userQueryBuilder.andWhere("user_group.group_id = :groupId ", {
+          groupId
         });
-        const userIds = usersInGroup.map(
-          (group) => new ObjectId(group.user_id)
-        );
-        query.id = { $in: userIds };
       }
 
-      if (filters) {
-        query.$or = [
-          { fullname: { $regex: filters, $options: "i" } },
-          { username: { $regex: filters, $options: "i" } },
-          { email: { $regex: filters, $options: "i" } },
-          { phone_number: filters.trim() },
-          { id: { $regex: filters, $options: "i" } }
-        ];
-      }
+      const [userListData, totalItem] = await userQueryBuilder
+        .skip((page - 1) * pageSize)
+        .take(pageSize)
+        .getManyAndCount();
 
-      const [userListData, totalItem] = await Promise.all([
-        this.userRepository.find({
-          where: query,
-          relations: ["user_group"], // Load quan hệ user_group
-          skip: (page - 1) * pageSize,
-          take: pageSize
-        }),
-        this.userRepository.count({ where: query })
-      ]);
-
-      const transformedData = userListData.map((item) => ({
-        id: item.id.toString(),
-        fullname: item.fullname,
-        email: item.email,
-        phone_number: item.phone_number,
-        gender: item.gender,
-        address: item.address,
-        ward: item.ward,
-        district: item.district,
-        province: item.province,
-        country: item.country,
-        username: item.username,
-        status_id: item.status_id,
-        user_group: item.user_group.map((detail) => detail.group_id)
-      }));
-
+      const transformedData = userListData
+        ? userListData.map((item) => ({
+            id: item.id,
+            fullname: item.fullname,
+            email: item.email,
+            phone_number: item.phone_number,
+            gender: item.gender,
+            address: item.address,
+            ward: item.ward,
+            district: item.district,
+            province: item.province,
+            country: item.country,
+            username: item.username,
+            status_id: item.status_id,
+            user_group: item.user_group.map((detail) => detail.group_id)
+            // ssids: item.ssids.map((detail) => detail.ssid_id)
+          }))
+        : [];
       const totalPages = Math.ceil(totalItem / pageSize);
       return {
         data: transformedData.length > 0 ? transformedData : [],
@@ -112,7 +112,6 @@ export class UserManagementService {
       });
     }
   }
-
   async handleEditUser(
     id: number,
     dataUser: EditUserManagementDto

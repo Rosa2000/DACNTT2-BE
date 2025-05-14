@@ -54,6 +54,7 @@ export class LessonController {
         data: handleAddLesson
       });
     } catch (error) {
+      console.log("error", error);
       return res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ code: -5, message: responseMessage.serviceError });
