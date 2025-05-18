@@ -136,6 +136,7 @@ export class LessonController {
       const page = dataQuery.page || 0;
       const pageSize = dataQuery.pageSize || 10;
       const filters = dataQuery.filters || "";
+      const status_id = dataQuery.status_id;
       const category = dataQuery.category;
       const level = dataQuery.level;
 
@@ -145,7 +146,8 @@ export class LessonController {
         filters,
         id,
         category,
-        level
+        level,
+        status_id,
       );
       return res.status(HttpStatus.OK).json({
         code: 0,

@@ -49,7 +49,8 @@ export class LessonsService {
     filters?: string,
     id?: number,
     category?: string,
-    level?: number
+    level?: number,
+    status_id?: number
   ): Promise<any> {
     try {
       page = Math.max(1, page);
@@ -81,6 +82,10 @@ export class LessonsService {
 
       if (level) {
         queryBuilder.andWhere("lessons.level = :level", { level });
+      }
+
+      if (status_id) {
+        queryBuilder.andWhere("lessons.status_id = :status_id", { status_id });
       }
 
       const [lessonListData, total] = await queryBuilder

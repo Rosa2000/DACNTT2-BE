@@ -25,6 +25,10 @@ export class GetDataLessonDto {
   @IsNumber()
   @ApiPropertyOptional({ description: "Lọc theo cấp độ", required: false })
   level?: number;
+
+  @IsNumber()
+  @ApiPropertyOptional({ description: "Lọc theo trạng thái", required: false })
+  status_id?: number;
 }
 
 export class CreateLessonDto {
