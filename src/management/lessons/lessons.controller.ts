@@ -147,7 +147,7 @@ export class LessonController {
         id,
         category,
         level,
-        status_id,
+        status_id
       );
       return res.status(HttpStatus.OK).json({
         code: 0,

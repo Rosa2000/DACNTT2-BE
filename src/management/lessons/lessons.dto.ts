@@ -73,6 +73,10 @@ export class UpdateLessonDto {
   @IsString()
   @ApiPropertyOptional({ description: "Danh mục" })
   category?: string;
+
+  @IsNumber()
+  @ApiPropertyOptional({ description: "Trạng thái" })
+  status_id?: number;
 }
 
 export class IdLessonDto {

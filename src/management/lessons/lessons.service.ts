@@ -108,7 +108,7 @@ export class LessonsService {
   }
 
   async updateLesson(id: number, dto: UpdateLessonDto): Promise<any> {
-    const { category, content, title, type } = dto;
+    const { category, content, title, type, status_id } = dto;
 
     const lesson = await this.lessonRepository.findOne({
       where: { id, status_id: 1 }
@@ -119,7 +119,7 @@ export class LessonsService {
 
     await this.lessonRepository.update(
       { id },
-      { category, content, title, type, modified_date: new Date() }
+      { category, content, title, type, status_id, modified_date: new Date() }
     );
     return { code: 0, message: responseMessage.success };
   }

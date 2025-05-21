@@ -36,7 +36,7 @@ import {
 export class ExerciseController {
   constructor(private readonly exercisesService: ExercisesService) {}
 
-  @Post("/add_lesson")
+  @Post("/add_exercise")
   @ApiOperation({ summary: "Thêm bài tập mới" })
   @ApiBody({ type: CreateExerciseDto })
   @UseGuards(VerifyLoginMiddleware)
