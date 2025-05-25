@@ -162,6 +162,20 @@ export class ExercisesService {
     return { code: 0, message: responseMessage.success };
   }
 
+  async restoreExercise(id: number): Promise<any> {
+    const excercise = await this.exerciseRepository.findOne({
+      where: { id, status_id: 2 }
+    });
+    if (!excercise) {
+      throw new NotFoundException(`Excercise with ID ${id} not found`);
+    }
+    await this.exerciseRepository.update(
+      { id },
+      { status_id: 1, deleted_date: undefined, modified_date: new Date() }
+    );
+    return { code: 0, message: responseMessage.success };
+  }
+
   async doExercise(
     dto: DoExerciseDto,
     userId: number

@@ -138,6 +138,20 @@ export class LessonsService {
     return { code: 0, message: responseMessage.success };
   }
 
+  async restoreLesson(id: number): Promise<any> {
+    const lesson = await this.lessonRepository.findOne({
+      where: { id, status_id: 2 }
+    });
+    if (!lesson) {
+      throw new NotFoundException(`Không tìm thấy bài học có ID ${id}`);
+    }
+    await this.lessonRepository.update(
+      { id },
+      { status_id: 1, deleted_date: undefined, modified_date: new Date() }
+    );
+    return { code: 0, message: responseMessage.success };
+  }
+
   async studyLesson(
     dto: StudyLessonDto,
     userId: number

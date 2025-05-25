@@ -122,6 +122,30 @@ export class ExerciseController {
     }
   }
 
+  @Post("/restore_exercise")
+  @ApiOperation({ summary: "Khôi phục bài tập" })
+  @ApiQuery({ type: ExerciseIdDto })
+  @UseGuards(VerifyLoginMiddleware)
+  @ApiBearerAuth()
+  async handleRestoreExercise(
+    @Query() dataQuery: ExerciseIdDto,
+    @Req() req: any,
+    @Res() res: any
+  ): Promise<any> {
+    try {
+      const handleRestoreExercise =
+        await this.exercisesService.restoreExercise(dataQuery.id);
+      return res.status(HttpStatus.OK).json({
+        code: handleRestoreExercise.code,
+        message: handleRestoreExercise.message
+      });
+    } catch (error) {
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ code: -5, message: responseMessage.serviceError });
+    }
+  }
+
   @Get("/data_exercises")
   @ApiOperation({ summary: "Lấy danh sách bài tập" })
   @ApiQuery({ type: GetDataExerciseDto })
