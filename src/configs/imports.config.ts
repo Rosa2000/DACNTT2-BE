@@ -2,6 +2,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Status } from "src/management/common/status/entities/status.entity";
 import { ExercisesModule } from "src/management/exercise/exercise.module";
 import { LessonsModule } from "src/management/lessons/lessons.module";
+import { StatisticsModule } from "src/management/statistics/statistics.module";
 import {
   GroupRole,
   UserGroup
@@ -20,5 +21,6 @@ export const ManagementAppImports = [
   UserAuthenticateModule,
   UserManagementModule,
   LessonsModule,
-  ExercisesModule
+  ExercisesModule,
+  StatisticsModule
 ];

@@ -67,6 +67,7 @@ export class ExercisesService {
     page: number,
     pageSize: number,
     filters?: string,
+    lessonId?: number,
     id?: number
   ): Promise<any> {
     try {
@@ -92,12 +93,26 @@ export class ExercisesService {
       if (id) {
         queryBuilder.andWhere("excercises.id = :id", { id });
       }
-
+      if (lessonId) {
+        queryBuilder.andWhere("excercises.lesson_id = :lessonId", { lessonId });
+      }
       const [excerciseListData, total] = await queryBuilder
         .skip(skip)
         .take(pageSize)
         .getManyAndCount();
       const totalPages = Math.ceil(total / pageSize);
+
+      console.log({
+        page,
+        pageSize,
+        skip,
+        filters,
+        lessonId,
+        id
+      });
+      console.log('SQL:', queryBuilder.getQuery());
+      console.log('Params:', queryBuilder.getParameters());
+
 
       return {
         data: excerciseListData.length > 0 ? excerciseListData : [],
@@ -131,6 +146,9 @@ export class ExercisesService {
       throw new NotFoundException(`Lesson with ID ${id} not found`);
     }
 
+    // làm trống options nếu type là fill_in  
+    const updatedOptions = type === "fill_in" ? undefined : options;
+
     await this.exerciseRepository.update(
       { id },
       {
@@ -138,7 +156,7 @@ export class ExercisesService {
         description,
         duration,
         lesson_id,
-        options,
+        options: updatedOptions,
         content,
         title,
         type,
@@ -175,6 +193,17 @@ export class ExercisesService {
     );
     return { code: 0, message: responseMessage.success };
   }
+
+  async getExerciseById(id: number): Promise<ExerciseResponseDto> {
+    const excercise = await this.exerciseRepository.findOne({
+      where: { id, status_id: 1 }
+    });
+    if (!excercise) {
+      throw new NotFoundException(`Excercise with ID ${id} not found`);
+    }
+    return new ExerciseResponseDto(excercise);
+  }
+
 
   async doExercise(
     dto: DoExerciseDto,

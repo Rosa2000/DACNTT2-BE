@@ -81,6 +81,7 @@ export class CreateExerciseDto {
   @IsString()
   duration?: string;
 }
+
 export class GetDataExerciseDto {
   @IsNumber()
   @ApiProperty({ description: "Số trang để phân trang", example: 1 })
@@ -97,6 +98,10 @@ export class GetDataExerciseDto {
   @IsNumber()
   @ApiPropertyOptional({ required: false })
   id?: number;
+
+  @IsNumber()
+  @ApiPropertyOptional({ required: false })
+  lessonId?: number;
 }
 
 // DTO để cập nhật bài tập

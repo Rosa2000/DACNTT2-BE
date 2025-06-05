@@ -9,7 +9,6 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, In, Not, Brackets } from "typeorm";
 import * as bcrypt from "bcrypt";
-import { ObjectId } from "mongodb";
 import { responseMessage } from "src/utils/constant";
 import {
   GroupRole,
@@ -38,71 +37,73 @@ export class UserManagementService {
     private readonly groupRoleRepository: Repository<GroupRole>
   ) {}
 
-  async findListUser(
+  async getUserList({
+    page,
+    pageSize,
+    filters,
+    groupId,
+    sortOrder = "asc",
+    statusId
+  }: {
     page: number,
     pageSize: number,
     filters: any,
-    groupId?: number
-  ): Promise<any> {
+    groupId?: number,
+    sortOrder?: "asc" | "desc",
+    statusId?: number
+  }): Promise<any> {
     try {
       page = Math.max(1, page);
-
       let userQueryBuilder = this.userRepository
         .createQueryBuilder("users")
-        .leftJoinAndSelect("users.user_group", "user_group")
-        .where("users.status_id != :statusId", { statusId: 2 });
+        .leftJoinAndSelect("users.user_group", "user_group");
+      if (typeof statusId === 'number' && !isNaN(statusId)) {
+        userQueryBuilder = userQueryBuilder.andWhere("users.status_id = :statusId", { statusId });
+      }
       if (filters) {
         userQueryBuilder = userQueryBuilder.andWhere(
           new Brackets((qb) => {
-            qb.where("users.fullname LIKE :filters", {
-              filters: `%${filters}%`
-            })
-              .orWhere("users.username LIKE :filters", {
-                filters: `%${filters}%`
-              })
-              .orWhere("users.email LIKE :filters", { filters: `%${filters}%` })
+            qb.where("users.fullname ILIKE :filters", { filters: `%${filters}%` })
+              .orWhere("users.username ILIKE :filters", { filters: `%${filters}%` })
+              .orWhere("users.email ILIKE :filters", { filters: `%${filters}%` })
               .orWhere("TRIM(users.phone_number) = :phoneNumber", {
                 phoneNumber: filters.trim()
               })
-              .orWhere("users.id LIKE :filters", { filters: `%${filters}%` });
+              .orWhere("CAST(users.id AS VARCHAR) LIKE :filters", {
+                filters: `%${filters}%`
+              });
           })
         );
       }
-
       if (groupId) {
-        userQueryBuilder.andWhere("user_group.group_id = :groupId ", {
-          groupId
-        });
+        userQueryBuilder = userQueryBuilder
+          .andWhere("EXISTS (SELECT 1 FROM user_group ug WHERE ug.user_id = users.id AND ug.group_id = :groupId)", {
+            groupId
+          });
       }
-
       const [userListData, totalItem] = await userQueryBuilder
+        .orderBy("users.created_date", sortOrder?.toUpperCase() === "ASC" ? "ASC" : "DESC")
         .skip((page - 1) * pageSize)
         .take(pageSize)
         .getManyAndCount();
-
       const transformedData = userListData
         ? userListData.map((item) => ({
             id: item.id,
             fullname: item.fullname,
             email: item.email,
-            phone_number: item.phone_number,
-            gender: item.gender,
-            address: item.address,
-            ward: item.ward,
-            district: item.district,
-            province: item.province,
-            country: item.country,
             username: item.username,
             status_id: item.status_id,
+            created_date: item.created_date,
             user_group: item.user_group.map((detail) => detail.group_id)
-            // ssids: item.ssids.map((detail) => detail.ssid_id)
           }))
         : [];
       const totalPages = Math.ceil(totalItem / pageSize);
       return {
         data: transformedData.length > 0 ? transformedData : [],
         total: totalItem,
-        totalPages
+        totalPages,
+        currentPage: page,
+        pageSize
       };
     } catch (error) {
       console.error(error);
@@ -112,7 +113,49 @@ export class UserManagementService {
       });
     }
   }
-  async handleEditUser(
+
+  async getUserById(id: number): Promise<any> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id },
+        relations: ["user_group"]
+      });
+  
+      if (!user) {
+        throw new NotFoundException({
+          code: -4,
+          message: responseMessage.notFound
+        });
+      }
+  
+      return {
+        id: user.id,
+        fullname: user.fullname,
+        email: user.email,
+        phone_number: user.phone_number,
+        gender: user.gender,
+        address: user.address,
+        ward: user.ward,
+        district: user.district,
+        province: user.province,
+        country: user.country,
+        username: user.username,
+        status_id: user.status_id,
+        created_date: user.created_date,
+        modified_date: user.modified_date,
+        user_group: user.user_group?.map((g) => g.group_id)
+      };
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException({
+        code: -5,
+        message: responseMessage.serviceError
+      });
+    }
+  }
+  
+
+  async updateUser(
     id: number,
     dataUser: EditUserManagementDto
   ): Promise<any> {
@@ -194,7 +237,7 @@ export class UserManagementService {
     }
   }
 
-  async handleAddUser(dataUser: AddUserManagementDto): Promise<any> {
+  async createUser(dataUser: AddUserManagementDto): Promise<any> {
     const {
       fullname,
       address,
@@ -268,7 +311,7 @@ export class UserManagementService {
     }
   }
 
-  async handleDeleteUser(id: number): Promise<UserInformation> {
+  async deleteUser(id: number): Promise<UserInformation> {
     try {
       const existingUser = await this.userRepository.findOne({
         where: { id: id }
@@ -295,7 +338,32 @@ export class UserManagementService {
     }
   }
 
-  async handleChangePassword(
+  async restoreUser(id: number): Promise<any> {
+    try {
+      const existingUser = await this.userRepository.findOne({
+        where: { id, status_id: 2 }
+      });
+      if (!existingUser) {
+        throw new NotFoundException({
+          code: -4,
+          message: `Không tìm thấy người dùng với ID ${id}`
+        });
+      }
+      await this.userRepository.update(
+        { id },
+        { status_id: 1, deleted_date: undefined, modified_date: new Date() }
+      );
+      return { code: 0, message: responseMessage.success };
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException({
+        code: -5,
+        message: responseMessage.serviceError
+      });
+    }
+  }
+
+  async changePassword(
     id: number,
     changePasswordData: ChangePasswordData
   ): Promise<any> {

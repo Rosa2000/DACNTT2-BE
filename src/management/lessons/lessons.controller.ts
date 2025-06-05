@@ -4,6 +4,8 @@ import {
   Get,
   HttpStatus,
   Post,
+  Put,
+  Delete,
   Query,
   Req,
   Res,
@@ -61,7 +63,7 @@ export class LessonController {
     }
   }
 
-  @Post("/edit_lesson")
+  @Put("/edit_lesson")
   @ApiOperation({ summary: "Thay đổi thông tin bài học" })
   @ApiBody({ type: UpdateLessonDto })
   @ApiQuery({ type: IdLessonDto })
@@ -96,7 +98,7 @@ export class LessonController {
     }
   }
 
-  @Post("/delete_lesson")
+  @Delete("/delete_lesson")
   @ApiOperation({ summary: "Xóa bài học" })
   @ApiQuery({ type: IdLessonDto })
   @UseGuards(VerifyLoginMiddleware)

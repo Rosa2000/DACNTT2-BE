@@ -22,5 +22,10 @@ export const databaseConfig = (): TypeOrmModuleOptions => ({
   password: process.env.POSTGRES_PASSWORD || "12345",
   database: process.env.POSTGRES_DB || "ezenglish",
   entities: [__dirname + "/../**/*.entity{.ts,.js}"],
-  synchronize: false
+  synchronize: false,
+  ssl: {
+    rejectUnauthorized: false, // Bắt buộc với Render
+  },
 });
+
+

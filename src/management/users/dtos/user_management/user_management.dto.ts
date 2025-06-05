@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsString, IsNumber, IsOptional, IsArray } from "class-validator";
+import { IsString, IsNumber, IsOptional, IsArray, IsIn } from "class-validator";
 
 export class GetUserListManagementDto {
   @IsNumber()
@@ -38,7 +38,17 @@ export class GetUserListManagementDto {
   @IsString()
   @ApiPropertyOptional()
   regionId: string;
+
+  @IsNumber()
+  @ApiPropertyOptional()
+  statusId?: number;
+
+  @IsString()
+  @IsIn(["asc", "desc"])
+  sortOrder?: "asc" | "desc";
+
 }
+
 export class UserDataDto {
   @IsString()
   @IsOptional()

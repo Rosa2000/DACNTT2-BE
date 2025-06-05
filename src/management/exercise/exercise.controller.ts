@@ -4,6 +4,8 @@ import {
   Get,
   HttpStatus,
   Post,
+  Put,
+  Delete,
   Query,
   Req,
   Res,
@@ -62,7 +64,7 @@ export class ExerciseController {
     }
   }
 
-  @Post("/edit_exercise")
+  @Put("/edit_exercise")
   @ApiOperation({ summary: "Thay đổi thông tin bài tập" })
   @ApiBody({ type: UpdateExerciseDto })
   @ApiQuery({ type: ExerciseIdDto })
@@ -97,7 +99,7 @@ export class ExerciseController {
     }
   }
 
-  @Post("/delete_exercise")
+  @Delete("/delete_exercise")
   @ApiOperation({ summary: "Xóa bài tập" })
   @ApiQuery({ type: ExerciseIdDto })
   @UseGuards(VerifyLoginMiddleware)
@@ -161,11 +163,13 @@ export class ExerciseController {
       const page = dataQuery.page || 0;
       const pageSize = dataQuery.pageSize || 10;
       const filters = dataQuery.filters || "";
+      const lessonId = dataQuery.lessonId || undefined;
 
       const exerciseInformation = await this.exercisesService.getDataExcercise(
         page,
         pageSize,
         filters,
+        lessonId,
         id
       );
       return res.status(HttpStatus.OK).json({
