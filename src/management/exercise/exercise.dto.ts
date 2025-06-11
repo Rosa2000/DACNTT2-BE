@@ -101,7 +101,7 @@ export class GetDataExerciseDto {
 
   @IsNumber()
   @ApiPropertyOptional({ required: false })
-  lessonId?: number;
+  lesson_id?: number;
 }
 
 // DTO để cập nhật bài tập
@@ -272,9 +272,27 @@ export class ExerciseResponseDto {
 }
 
 export class DoExerciseDto {
+  @ApiProperty({ description: 'ID của bài tập', example: 1 })
+  @IsNumber()
   exercise_id: number;
+
+  @ApiProperty({ description: 'Câu trả lời của người dùng', example: 'goes' })
+  @IsString()
   user_answer: string;
-  status_id: number; // 3 (started), 4 (going), 5 (ended)
+
+  @ApiProperty({ description: 'Trạng thái làm bài: 3 (bắt đầu), 4 (đang làm), 5 (kết thúc)', example: 3 })
+  @IsNumber()
+  status_id: number;
+}
+export class DoExerciseBatchDto {
+  @ApiProperty({
+    description: 'Danh sách kết quả làm bài',
+    type: [DoExerciseDto]
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DoExerciseDto)
+  answers: DoExerciseDto[];
 }
 
 export class UserExerciseResponseDto {

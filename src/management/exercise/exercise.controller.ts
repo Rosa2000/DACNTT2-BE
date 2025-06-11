@@ -26,6 +26,7 @@ import { VerifyLoginMiddleware } from "src/middleware/verify_user.middleware";
 import { ExercisesService } from "./exercise.service";
 import {
   CreateExerciseDto,
+  DoExerciseBatchDto,
   DoExerciseDto,
   ExerciseIdDto,
   GetDataExerciseDto,
@@ -163,13 +164,13 @@ export class ExerciseController {
       const page = dataQuery.page || 0;
       const pageSize = dataQuery.pageSize || 10;
       const filters = dataQuery.filters || "";
-      const lessonId = dataQuery.lessonId || undefined;
+      const lesson_id = dataQuery.lesson_id || undefined;
 
       const exerciseInformation = await this.exercisesService.getDataExcercise(
         page,
         pageSize,
         filters,
-        lessonId,
+        lesson_id,
         id
       );
       return res.status(HttpStatus.OK).json({
@@ -185,28 +186,26 @@ export class ExerciseController {
   }
 
   @Post("/do_exercise")
-  @ApiOperation({ summary: "Làm bài tập" })
-  @ApiBody({ type: DoExerciseDto })
+  @ApiOperation({ summary: "Làm bài tập (1 hoặc nhiều)" })
   @ApiQuery({ type: UserExerciseIdDto })
+  @ApiBody({ type: DoExerciseBatchDto })
   @UseGuards(VerifyLoginMiddleware)
   @ApiBearerAuth()
   async handleDoExercise(
     @Query() dataQuery: UserExerciseIdDto,
-    @Body() bodyRequest: DoExerciseDto,
+    @Body() dataBody: DoExerciseDto | DoExerciseDto[],
     @Req() req: any,
     @Res() res: any
   ): Promise<any> {
     try {
-      const id = Number(dataQuery.user_id);
-      const handleDoExercise = await this.exercisesService.doExercise(
-        bodyRequest,
-        id
+      const result = await this.exercisesService.doExercise(
+        dataQuery.user_id,
+        dataBody
       );
-
       return res.status(HttpStatus.OK).json({
         code: 0,
         message: responseMessage.success,
-        data: handleDoExercise
+        data: result
       });
     } catch (error) {
       return res

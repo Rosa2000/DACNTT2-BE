@@ -171,8 +171,8 @@ export class UserLessonResponseDto {
 
   constructor(userLesson: any) {
     this.id = userLesson.id;
-    this.user_id = userLesson.user.id;
-    this.lesson_id = userLesson.lesson.id;
+    this.user_id = userLesson.user_id;
+    this.lesson_id = userLesson.lesson_id;
     this.status_id = userLesson.status_id;
     this.created_date = userLesson.created_date;
     this.modified_date = userLesson.modified_date;

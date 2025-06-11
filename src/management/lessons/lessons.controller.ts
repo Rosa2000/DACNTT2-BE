@@ -209,6 +209,7 @@ export class LessonController {
         ...handleStudy
       });
     } catch (error) {
+      console.log("lỗi", error); 
       return res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ code: -5, message: responseMessage.serviceError });

@@ -67,7 +67,7 @@ export class ExercisesService {
     page: number,
     pageSize: number,
     filters?: string,
-    lessonId?: number,
+    lesson_id?: number,
     id?: number
   ): Promise<any> {
     try {
@@ -93,26 +93,14 @@ export class ExercisesService {
       if (id) {
         queryBuilder.andWhere("excercises.id = :id", { id });
       }
-      if (lessonId) {
-        queryBuilder.andWhere("excercises.lesson_id = :lessonId", { lessonId });
+      if (lesson_id) {
+        queryBuilder.andWhere("excercises.lesson_id = :lesson_id", { lesson_id });
       }
       const [excerciseListData, total] = await queryBuilder
         .skip(skip)
         .take(pageSize)
         .getManyAndCount();
       const totalPages = Math.ceil(total / pageSize);
-
-      console.log({
-        page,
-        pageSize,
-        skip,
-        filters,
-        lessonId,
-        id
-      });
-      console.log('SQL:', queryBuilder.getQuery());
-      console.log('Params:', queryBuilder.getParameters());
-
 
       return {
         data: excerciseListData.length > 0 ? excerciseListData : [],
@@ -204,8 +192,32 @@ export class ExercisesService {
     return new ExerciseResponseDto(excercise);
   }
 
-
   async doExercise(
+    userId: number,
+    answers: DoExerciseDto | DoExerciseDto[]
+  ): Promise<UserExerciseResponseDto | UserExerciseResponseDto[]> {
+    const answerList = Array.isArray(answers) ? answers : [answers];
+    const results: UserExerciseResponseDto[] = [];
+    console.log('userId:', userId);
+    console.log('answers:', answers);
+    console.log('results:', results);
+    for (const answer of answerList) {
+      try {
+        const result = await this._doSingleExercise(answer, userId);
+        results.push(result);
+      } catch (err) {
+        // Có thể log lỗi hoặc bỏ qua từng lỗi riêng lẻ
+        console.error(
+          `Lỗi khi xử lý exercise_id=${answer.exercise_id} cho user_id=${userId}:`,
+          err.message
+        );
+      }
+    }
+    return Array.isArray(answers) ? results : results[0];
+  }
+
+  // Hàm xử lý 1 bài (private)
+  private async _doSingleExercise(
     dto: DoExerciseDto,
     userId: number
   ): Promise<UserExerciseResponseDto> {
@@ -294,8 +306,13 @@ export class ExercisesService {
       });
     }
 
-    const savedUserExercise =
-      await this.userExerciseRepository.save(userExercise);
+    // Log dữ liệu trước khi lưu
+    console.log('exercise:', exercise);
+    console.log('status:', status);
+    console.log('userLesson:', userLesson);
+    console.log('userExercise:', userExercise);
+
+    const savedUserExercise = await this.userExerciseRepository.save(userExercise);
     const result = await this.userExerciseRepository.findOne({
       where: { id: savedUserExercise.id },
       relations: ["user", "exercise", "status"]

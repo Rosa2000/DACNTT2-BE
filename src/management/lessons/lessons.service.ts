@@ -169,7 +169,7 @@ export class LessonsService {
     // Kiểm tra trạng thái hợp lệ (3, 4, 5)
     if (![3, 4, 5].includes(dto.status_id)) {
       throw new BadRequestException(
-        "Invalid status_id. Must be 3 (started), 4 (going), or 5 (ended)"
+        "Trạng thái không hợp lệ. Phải là 3 (đã bắt đầu), 4 (đang học), hoặc 5 (đã kết thúc)"
       );
     }
 
@@ -179,39 +179,39 @@ export class LessonsService {
     });
 
     if (userLesson) {
-      // Nếu bài học đã kết thúc (status_id = 5), không cho phép cập nhật
-      if (userLesson.status_id === 5) {
-        throw new BadRequestException("Lesson has already ended");
-      }
+      // // Nếu bài học đã kết thúc (status_id = 5), không cho phép cập nhật
+      // if (userLesson.status_id === 5) {
+      //   throw new BadRequestException("Bài học đã kết thúc");
+      // }
 
-      // Kiểm tra trạng thái chuyển tiếp hợp lệ
-      if (dto.status_id <= userLesson.status_id) {
-        throw new BadRequestException("Cannot revert to an earlier status");
-      }
+      // // Kiểm tra trạng thái chuyển tiếp hợp lệ
+      // if (dto.status_id <= userLesson.status_id) {
+      //   throw new BadRequestException("Không thể quay lại trạng thái trước");
+      // }
 
       // Cập nhật trạng thái và tiến độ
       userLesson.status_id = dto.status_id;
       userLesson.modified_date = new Date();
     } else {
-      // Nếu chưa có bản ghi, tạo mới với status_id = 3 (started)
-      if (dto.status_id !== 3) {
-        throw new BadRequestException(
-          "Must start the lesson first (status_id = 3)"
-        );
-      }
-
+      // Nếu chưa có bản ghi, tự động tạo mới với status_id = 4 (đang học)
       userLesson = this.userLessonRepository.create({
         user_id: userId,
         lesson_id: dto.lesson_id,
-        status_id: dto.status_id
+        status_id: 4 // Tự động set trạng thái "đang học"
       });
     }
 
+    try {
     const savedUserLesson = await this.userLessonRepository.save(userLesson);
+    console.log('savedUserLesson:', savedUserLesson);
     const result = await this.userLessonRepository.findOne({
       where: { id: savedUserLesson.id }
     });
-
+    console.log('result:', result);
     return new UserLessonResponseDto(result);
+    } catch (error) {
+      console.error('Lỗi khi lưu userLesson:', error);
+      throw error; // hoặc return lỗi nếu muốn
+    }
   }
 }

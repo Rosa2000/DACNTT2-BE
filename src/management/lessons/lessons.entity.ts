@@ -5,6 +5,8 @@ import {
   ManyToOne,
   JoinColumn
 } from "typeorm";
+import { UserInformation } from "../users/entities/user_management/user_management.entity";
+import { Status } from "../common/status/entities/status.entity";
 @Entity("lessons")
 export class Lesson {
   @PrimaryGeneratedColumn()
@@ -46,11 +48,23 @@ export class UserLesson {
   @Column()
   user_id: number;
 
+  @ManyToOne(() => UserInformation)
+  @JoinColumn({ name: "user_id" })
+  user: UserInformation;
+
   @Column()
   lesson_id: number;
 
+  @ManyToOne(() => Lesson)
+  @JoinColumn({ name: "lesson_id" })
+  lesson: Lesson;
+
   @Column()
   status_id: number;
+
+  @ManyToOne(() => Status)
+  @JoinColumn({ name: "status_id" })
+  status: Status;
 
   @Column({ type: "timestamp", nullable: true })
   modified_date: Date;

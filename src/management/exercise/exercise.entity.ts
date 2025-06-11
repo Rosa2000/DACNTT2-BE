@@ -6,6 +6,8 @@ import {
   PrimaryGeneratedColumn
 } from "typeorm";
 import { Lesson } from "../lessons/lessons.entity";
+import { UserInformation } from '../users/entities/user_management/user_management.entity';
+import { Status } from "../common/status/entities/status.entity";
 
 @Entity("exercises")
 export class Exercise {
@@ -61,11 +63,23 @@ export class UserExercise {
   @Column()
   user_id: number;
 
+  @ManyToOne(() => UserInformation)
+  @JoinColumn({ name: "user_id" })
+  user: UserInformation;
+
   @Column()
   exercise_id: number;
 
+  @ManyToOne(() => Exercise)
+  @JoinColumn({ name: "exercise_id" })
+  exercise: Exercise;
+
   @Column()
   status_id: number;
+
+  @ManyToOne(() => Status)
+  @JoinColumn({ name: "status_id" })
+  status: Status;
 
   @Column({ type: "text", nullable: true })
   user_answer: string;
