@@ -57,12 +57,16 @@ export class VerifyLoginMiddleware implements NestMiddleware {
           where: { id: user.status_id }
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // Kiểm tra quyền theo group_id: 1 = admin, 2 = user
+        const groupIds = user.user_group.map(g => g.group_id);
+        const isAdmin = groupIds.includes(1);
+
         const { password, status_id, ...userWithoutSensitiveData } = user;
         req.userData = {
-          ...userWithoutSensitiveData
+          ...userWithoutSensitiveData,
+          isAdmin
         };
-
+        console.log(req.userData);
         return next();
       } else {
         return res
