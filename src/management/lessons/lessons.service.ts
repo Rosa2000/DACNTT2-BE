@@ -8,6 +8,7 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Brackets, Repository } from "typeorm";
 import { Lesson, UserLesson } from "./lessons.entity";
+import { UserExercise } from "../exercise/exercise.entity";
 import {
   CreateLessonDto,
   LessonResponseDto,
@@ -23,7 +24,9 @@ export class LessonsService {
     @InjectRepository(Lesson)
     private readonly lessonRepository: Repository<Lesson>,
     @InjectRepository(UserLesson)
-    private readonly userLessonRepository: Repository<UserLesson>
+    private readonly userLessonRepository: Repository<UserLesson>,
+    @InjectRepository(UserExercise)
+    private readonly userExerciseRepository: Repository<UserExercise>
   ) {}
 
   async createLesson(dto: CreateLessonDto): Promise<LessonResponseDto> {
@@ -44,6 +47,7 @@ export class LessonsService {
   }
 
   async getDataLessons(
+    userData: any,
     page: number,
     pageSize: number,
     filters?: string,
@@ -59,8 +63,14 @@ export class LessonsService {
 
       const queryBuilder = this.lessonRepository
         .createQueryBuilder("lessons")
-        .where("lessons.status_id != :statusId", { statusId: 6 })
+        // .where("lessons.status_id != :statusId", { statusId: 6 })
         .orderBy("lessons.created_date", "DESC");
+
+      if (!userData.isAdmin) {
+        queryBuilder.andWhere("lessons.status_id = :statusId", { statusId: 1 });
+      } else {
+
+      }
 
       if (filters) {
         queryBuilder.andWhere(
@@ -94,8 +104,42 @@ export class LessonsService {
         .getManyAndCount();
       const totalPages = Math.ceil(total / pageSize);
 
+      let data = lessonListData;
+
+      if (!userData.isAdmin) {
+        const userLessons = await this.userLessonRepository.find({
+          where: { user_id: userData.id }
+        });
+  
+        const userExercises = await this.userExerciseRepository.find({
+          where: { user_id: userData.id, status_id: 3 },
+          relations: ['exercise']
+        });
+    
+        data = lessonListData.map(lesson => {
+          const userLesson = userLessons.find(ul => ul.lesson_id === lesson.id);
+
+          const study_status_id = userLesson?.status_id ?? null;
+  
+          const lessonScores = userExercises
+            .filter(ex => ex.exercise?.lesson_id === lesson.id)
+            .map(ex => Number(ex.score));
+          console.log('lessonScores:', lessonScores);
+          const score = lessonScores.length
+            ? Math.round(lessonScores.reduce((sum, s) => sum + s, 0))
+            : null;
+          console.log('score:', score);
+  
+          return {
+            ...lesson,
+            study_status_id,
+            score
+          };
+        });
+      }
+
       return {
-        data: lessonListData.length > 0 ? lessonListData : [],
+        data, //: lessonListData.length > 0 ? lessonListData : []
         total: total,
         totalPages: totalPages
       };
@@ -212,6 +256,40 @@ export class LessonsService {
     } catch (error) {
       console.error('Lỗi khi lưu userLesson:', error);
       throw error; // hoặc return lỗi nếu muốn
+    }
+  }
+
+  async getUserLessons(
+    userId: number,
+    status_id?: number,
+    page?: number,
+    pageSize?: number
+  ): Promise<UserLessonResponseDto[]> {
+    try {
+      page = Math.max(1, page ?? 1);
+      const skip = (page - 1) * (pageSize ?? 10);
+  
+      const queryBuilder = this.userLessonRepository
+        .createQueryBuilder("user_lessons")
+        .where("user_lessons.user_id = :userId", { userId })
+        .orderBy("user_lessons.created_date", "DESC");
+  
+      if (status_id) {
+        queryBuilder.andWhere("user_lessons.status_id = :statusId", { statusId: status_id });
+      }
+  
+      const userLessons = await queryBuilder
+        .skip(skip)
+        .take(pageSize ?? 10)
+        .getMany();
+  
+      return userLessons.map(userLesson => new UserLessonResponseDto(userLesson));
+    } catch (error) {
+      console.error('Lỗi khi lấy userLessons:', error);
+      throw new InternalServerErrorException({
+        code: -5,
+        message: responseMessage.serviceError
+      });
     }
   }
 }

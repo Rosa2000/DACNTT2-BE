@@ -185,7 +185,7 @@ export class ExerciseIdDto {
 
 export class UserExerciseIdDto {
   @IsNumber()
-  @ApiProperty({ description: "ID của bài tập", example: 1 })
+  @ApiProperty({ description: "ID của user", example: 1 })
   user_id: number;
 }
 // DTO để trả về thông tin bài tập

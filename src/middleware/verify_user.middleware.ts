@@ -66,7 +66,7 @@ export class VerifyLoginMiddleware implements NestMiddleware {
           ...userWithoutSensitiveData,
           isAdmin
         };
-        console.log(req.userData);
+        
         return next();
       } else {
         return res

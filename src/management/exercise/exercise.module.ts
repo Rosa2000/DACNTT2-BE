@@ -26,6 +26,10 @@ import { Lesson, UserLesson } from "../lessons/lessons.entity";
 export class ExercisesModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(VerifyLoginMiddleware).forRoutes({
+      path: "/v1/exercise",
+      method: RequestMethod.ALL
+    },
+    {
       path: "/v1/exercise/*",
       method: RequestMethod.ALL
     });

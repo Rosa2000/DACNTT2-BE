@@ -9,12 +9,15 @@ import {
   Query,
   Req,
   Res,
-  UseGuards
+  Param,
+  UseGuards,
+  Patch
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiTags
 } from "@nestjs/swagger";
@@ -39,7 +42,7 @@ import {
 export class ExerciseController {
   constructor(private readonly exercisesService: ExercisesService) {}
 
-  @Post("/add_exercise")
+  @Post("")
   @ApiOperation({ summary: "Thêm bài tập mới" })
   @ApiBody({ type: CreateExerciseDto })
   @UseGuards(VerifyLoginMiddleware)

@@ -64,6 +64,7 @@ export class ExercisesService {
   }
 
   async getDataExcercise(
+    userData: any,
     page: number,
     pageSize: number,
     filters?: string,
@@ -77,8 +78,12 @@ export class ExercisesService {
 
       const queryBuilder = this.exerciseRepository
         .createQueryBuilder("excercises")
-        .where("excercises.status_id != :statusId", { statusId: 6 })
+        // .where("excercises.status_id != :statusId", { statusId: 6 })
         .orderBy("excercises.created_date", "DESC");
+
+      if (!userData.isAdmin) {
+        queryBuilder.andWhere("excercises.status_id != :statusId", { statusId: 2 });
+      }
 
       if (filters) {
         queryBuilder.andWhere(
@@ -198,12 +203,9 @@ export class ExercisesService {
   ): Promise<UserExerciseResponseDto | UserExerciseResponseDto[]> {
     const answerList = Array.isArray(answers) ? answers : [answers];
     const results: UserExerciseResponseDto[] = [];
-    console.log('userId:', userId);
-    console.log('answers:', answers);
-    console.log('results:', results);
     for (const answer of answerList) {
       try {
-        const result = await this._doSingleExercise(answer, userId);
+        const result = await this.doSingleExercise(answer, userId);
         results.push(result);
       } catch (err) {
         // Có thể log lỗi hoặc bỏ qua từng lỗi riêng lẻ
@@ -217,7 +219,7 @@ export class ExercisesService {
   }
 
   // Hàm xử lý 1 bài (private)
-  private async _doSingleExercise(
+  private async doSingleExercise(
     dto: DoExerciseDto,
     userId: number
   ): Promise<UserExerciseResponseDto> {
@@ -228,14 +230,14 @@ export class ExercisesService {
     });
     if (!exercise) {
       throw new NotFoundException(
-        `Exercise with ID ${dto.exercise_id} not found`
+        `Bài tập với ID ${dto.exercise_id} không tồn tại`
       );
     }
 
     // Kiểm tra trạng thái hợp lệ (3, 4, 5)
     if (![3, 4, 5].includes(dto.status_id)) {
       throw new BadRequestException(
-        "Invalid status_id. Must be 3 (started), 4 (going), or 5 (ended)"
+        "Trạng thái không hợp lệ. Phải là 3 (đã bắt đầu), 4 (đang làm), hoặc 5 (đã kết thúc)"
       );
     }
 
@@ -244,7 +246,7 @@ export class ExercisesService {
       where: { id: dto.status_id }
     });
     if (!status) {
-      throw new NotFoundException(`Status with ID ${dto.status_id} not found`);
+      throw new NotFoundException(`Trạng thái với ID ${dto.status_id} không tồn tại`);
     }
 
     // Kiểm tra học viên đã bắt đầu bài học liên quan chưa
@@ -256,7 +258,7 @@ export class ExercisesService {
     });
     if (!userLesson || userLesson.status_id < 3) {
       throw new BadRequestException(
-        "You must start the related lesson before doing this exercise"
+        "Bạn phải hoàn thành bài học liên quan trước khi làm bài tập này"
       );
     }
 
@@ -271,14 +273,14 @@ export class ExercisesService {
 
     if (userExercise) {
       // Nếu bài tập đã kết thúc (status_id = 5), không cho phép cập nhật
-      if (userExercise.status_id === 5) {
-        throw new BadRequestException("Exercise has already ended");
-      }
+      // if (userExercise.status_id === 5) {
+      //   throw new BadRequestException("Exercise has already ended");
+      // }
 
       // Kiểm tra trạng thái chuyển tiếp hợp lệ
-      if (dto.status_id <= userExercise.status_id) {
-        throw new BadRequestException("Cannot revert to an earlier status");
-      }
+      // if (dto.status_id <= userExercise.status_id) {
+      //   throw new BadRequestException("Không thể quay lại trạng thái trước");
+      // }
 
       // Cập nhật trạng thái và câu trả lời
       userExercise.status_id = dto.status_id;
@@ -292,7 +294,7 @@ export class ExercisesService {
       // Nếu chưa có bản ghi, tạo mới với status_id = 3 (started)
       if (dto.status_id !== 3) {
         throw new BadRequestException(
-          "Must start the exercise first (status_id = 3)"
+          "Bạn phải bắt đầu bài học trước (status_id = 3)"
         );
       }
 
@@ -305,12 +307,6 @@ export class ExercisesService {
         created_date: new Date()
       });
     }
-
-    // Log dữ liệu trước khi lưu
-    console.log('exercise:', exercise);
-    console.log('status:', status);
-    console.log('userLesson:', userLesson);
-    console.log('userExercise:', userExercise);
 
     const savedUserExercise = await this.userExerciseRepository.save(userExercise);
     const result = await this.userExerciseRepository.findOne({

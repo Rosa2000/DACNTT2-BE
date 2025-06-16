@@ -150,19 +150,27 @@ export class UserLessonDto {
 
 export class UserLessonResponseDto {
   @IsNumber()
-  @ApiProperty({ required: true })
+  @ApiProperty({ description: "Số trang để phân trang", example: 1 })
+  page: number;
+
+  @IsNumber()
+  @ApiProperty({ description: "Số mục trên mỗi trang", example: 10 })
+  pageSize: number;
+
+  @IsNumber()
+  @ApiPropertyOptional({ description: "ID bài học cụ thể"})
   id: number;
 
   @IsNumber()
-  @ApiProperty({ required: true })
+  @ApiPropertyOptional({ description: "ID người dùng" })
   user_id: number;
 
   @IsNumber()
-  @ApiProperty({ required: true })
+  @ApiPropertyOptional({ description: "ID bài học" })
   lesson_id: number;
 
   @IsNumber()
-  @ApiProperty({ required: true })
+  @ApiPropertyOptional({ description: "Trạng thái học tập" })
   status_id: number;
 
   created_date: Date;

@@ -29,13 +29,14 @@ import {
   IdLessonDto,
   StudyLessonDto,
   UpdateLessonDto,
-  UserLessonDto
+  UserLessonDto,
+  UserLessonResponseDto
 } from "./lessons.dto";
 
 @Controller("/v1/lesson")
 @ApiTags("API quản lý và tương tác bài học")
 export class LessonController {
-  constructor(private readonly lessonServcie: LessonsService) {}
+  constructor(private readonly lessonService: LessonsService) {}
 
   @Post("/add_lesson")
   @ApiOperation({ summary: "Thêm bài học mới" })
@@ -48,7 +49,7 @@ export class LessonController {
     @Res() res: any
   ): Promise<any> {
     try {
-      const handleAddLesson = await this.lessonServcie.createLesson(addRequest);
+      const handleAddLesson = await this.lessonService.createLesson(addRequest);
 
       return res.status(HttpStatus.OK).json({
         code: 0,
@@ -77,7 +78,7 @@ export class LessonController {
   ): Promise<any> {
     try {
       const id = Number(dataQuery.id);
-      const handleChangeLesson = await this.lessonServcie.updateLesson(
+      const handleChangeLesson = await this.lessonService.updateLesson(
         id,
         editRequest
       );
@@ -109,7 +110,7 @@ export class LessonController {
     @Res() res: any
   ): Promise<any> {
     try {
-      const handleDeleteLesson = await this.lessonServcie.deleteLesson(
+      const handleDeleteLesson = await this.lessonService.deleteLesson(
         dataQuery.id
       );
       return res.status(HttpStatus.OK).json({
@@ -134,7 +135,7 @@ export class LessonController {
     @Res() res: any
   ): Promise<any> {
     try {
-      const handleRestoreLesson = await this.lessonServcie.restoreLesson(
+      const handleRestoreLesson = await this.lessonService.restoreLesson(
         dataQuery.id
       );
       return res.status(HttpStatus.OK).json({
@@ -159,6 +160,8 @@ export class LessonController {
     @Res() res: any
   ): Promise<any> {
     try {
+      const userData = req.userData;
+
       const id = dataQuery?.id;
       const page = dataQuery.page || 0;
       const pageSize = dataQuery.pageSize || 10;
@@ -167,7 +170,8 @@ export class LessonController {
       const category = dataQuery.category;
       const level = dataQuery.level;
 
-      const lessonInformation = await this.lessonServcie.getDataLessons(
+      const lessonInformation = await this.lessonService.getDataLessons(
+        userData,
         page,
         pageSize,
         filters,
@@ -201,7 +205,7 @@ export class LessonController {
     @Res() res: any
   ): Promise<any> {
     try {
-      const handleStudy = await this.lessonServcie.studyLesson(
+      const handleStudy = await this.lessonService.studyLesson(
         dataBody,
         dataQuery.user_id
       );
@@ -215,4 +219,34 @@ export class LessonController {
         .json({ code: -5, message: responseMessage.serviceError });
     }
   }
+
+  @Get("/user_lessons")
+  @ApiOperation({ summary: "Lấy thông tin học tập của người dùng" })
+  @UseGuards(VerifyLoginMiddleware)
+  @ApiBearerAuth()
+  async handleGetUserLessons(
+    @Query() dataQuery: UserLessonResponseDto,
+    @Req() req: any,
+    @Res() res: any
+  ): Promise<any> {
+    try {
+      const userData = req.userData;
+      const userLessons = await this.lessonService.getUserLessons(
+        userData.id,
+        dataQuery.status_id,
+        dataQuery.page,
+        dataQuery.pageSize
+      );
+      return res.status(HttpStatus.OK).json({
+        code: 0,
+        message: responseMessage.success,
+        data: userLessons
+      });
+    } catch (error) {
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ code: -5, message: responseMessage.serviceError });
+    }
+  }
 }
+

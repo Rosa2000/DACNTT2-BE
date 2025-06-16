@@ -6,6 +6,7 @@ import { LessonController } from "./lessons.controller";
 import { LessonsService } from "./lessons.service";
 import { UserVerifyInformation } from "../users/entities/user_authenticate/user_authenticate.entity";
 import { Status } from "../common/status/entities/status.entity";
+import { UserExercise } from "../exercise/exercise.entity";
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { Status } from "../common/status/entities/status.entity";
       Lesson,
       UserLesson,
       UserVerifyInformation,
-      Status
+      Status,
+      UserExercise
     ])
   ],
   controllers: [LessonController],
@@ -22,6 +24,10 @@ import { Status } from "../common/status/entities/status.entity";
 export class LessonsModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(VerifyLoginMiddleware).forRoutes({
+      path: "/v1/lesson",
+      method: RequestMethod.ALL
+    },
+    {
       path: "/v1/lesson/*",
       method: RequestMethod.ALL
     });
