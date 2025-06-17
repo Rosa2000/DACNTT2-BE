@@ -68,23 +68,22 @@ export class ExerciseController {
     }
   }
 
-  @Put("/edit_exercise")
+  @Put(":id")
   @ApiOperation({ summary: "Thay đổi thông tin bài tập" })
+  @ApiParam({ name: 'id', type: Number, description: 'ID bài tập' })
   @ApiBody({ type: UpdateExerciseDto })
-  @ApiQuery({ type: ExerciseIdDto })
   @UseGuards(VerifyLoginMiddleware)
   @ApiBearerAuth()
   async handleEditExercise(
-    @Query() dataQuery: ExerciseIdDto,
-    @Body() editRequest: UpdateExerciseDto,
+    @Param('id') id: number,
+    @Body() dto: UpdateExerciseDto,
     @Req() req: any,
     @Res() res: any
   ): Promise<any> {
     try {
-      const id = Number(dataQuery.id);
       const handleEditExercise = await this.exercisesService.updateExercise(
         id,
-        editRequest
+        dto
       );
       if (handleEditExercise.code == 0) {
         return res.status(HttpStatus.OK).json({
@@ -97,26 +96,25 @@ export class ExerciseController {
         });
       }
     } catch (error) {
+      console.log(error);
       return res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ code: -5, message: responseMessage.serviceError });
     }
   }
 
-  @Delete("/delete_exercise")
+  @Delete(":id")
   @ApiOperation({ summary: "Xóa bài tập" })
-  @ApiQuery({ type: ExerciseIdDto })
+  @ApiParam({ name: 'id', type: Number, description: 'ID bài tập' })
   @UseGuards(VerifyLoginMiddleware)
   @ApiBearerAuth()
   async handleDeleteExercise(
-    @Query() dataQuery: ExerciseIdDto,
+    @Param('id') id: number,
     @Req() req: any,
     @Res() res: any
   ): Promise<any> {
     try {
-      const handleDeleteLesson = await this.exercisesService.deleteExcercise(
-        dataQuery.id
-      );
+      const handleDeleteLesson = await this.exercisesService.deleteExcercise(id);
       return res.status(HttpStatus.OK).json({
         code: handleDeleteLesson.code,
         message: handleDeleteLesson.message
@@ -128,19 +126,19 @@ export class ExerciseController {
     }
   }
 
-  @Post("/restore_exercise")
+  @Patch(":id/restore")
   @ApiOperation({ summary: "Khôi phục bài tập" })
-  @ApiQuery({ type: ExerciseIdDto })
+  @ApiParam({ name: 'id', type: Number, description: 'ID bài tập' })
   @UseGuards(VerifyLoginMiddleware)
   @ApiBearerAuth()
   async handleRestoreExercise(
-    @Query() dataQuery: ExerciseIdDto,
+    @Param('id') id: number,
     @Req() req: any,
     @Res() res: any
   ): Promise<any> {
     try {
       const handleRestoreExercise =
-        await this.exercisesService.restoreExercise(dataQuery.id);
+        await this.exercisesService.restoreExercise(id);
       return res.status(HttpStatus.OK).json({
         code: handleRestoreExercise.code,
         message: handleRestoreExercise.message
@@ -152,7 +150,7 @@ export class ExerciseController {
     }
   }
 
-  @Get("/data_exercises")
+  @Get("")
   @ApiOperation({ summary: "Lấy danh sách bài tập" })
   @ApiQuery({ type: GetDataExerciseDto })
   @UseGuards(VerifyLoginMiddleware)
@@ -163,18 +161,22 @@ export class ExerciseController {
     @Res() res: any
   ): Promise<any> {
     try {
+      const userData = req.userData;
+
       const id = dataQuery?.id;
       const page = dataQuery.page || 0;
       const pageSize = dataQuery.pageSize || 10;
       const filters = dataQuery.filters || "";
       const lesson_id = dataQuery.lesson_id || undefined;
-
+      const type = dataQuery.type || undefined;
       const exerciseInformation = await this.exercisesService.getDataExcercise(
+        userData,
         page,
         pageSize,
         filters,
         lesson_id,
-        id
+        id,
+        type
       );
       return res.status(HttpStatus.OK).json({
         code: 0,

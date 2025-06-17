@@ -69,7 +69,8 @@ export class ExercisesService {
     pageSize: number,
     filters?: string,
     lesson_id?: number,
-    id?: number
+    id?: number,
+    type?: string
   ): Promise<any> {
     try {
       page = Math.max(1, page);
@@ -101,6 +102,9 @@ export class ExercisesService {
       if (lesson_id) {
         queryBuilder.andWhere("excercises.lesson_id = :lesson_id", { lesson_id });
       }
+      if (type) {
+        queryBuilder.andWhere("excercises.type = :type", { type });
+      }
       const [excerciseListData, total] = await queryBuilder
         .skip(skip)
         .take(pageSize)
@@ -113,6 +117,7 @@ export class ExercisesService {
         totalPages: totalPages
       };
     } catch (error) {
+      console.log('error:', error);
       throw new InternalServerErrorException({
         code: -5,
         message: responseMessage.serviceError

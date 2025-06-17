@@ -92,16 +92,20 @@ export class GetDataExerciseDto {
   pageSize: number;
 
   @IsString()
-  @ApiPropertyOptional({ required: false })
+  @ApiPropertyOptional({ description: "Tìm kiếm theo tiêu đề", required: false })
   filters?: string;
 
   @IsNumber()
-  @ApiPropertyOptional({ required: false })
+  @ApiPropertyOptional({ description: "Tìm kiếm theo id", required: false })
   id?: number;
 
   @IsNumber()
-  @ApiPropertyOptional({ required: false })
+  @ApiPropertyOptional({ description: "Tìm kiếm theo id bài học", required: false })
   lesson_id?: number;
+
+  @IsString()
+  @ApiPropertyOptional({ description: "Tìm kiếm theo loại bài tập", required: false })
+  type?: string;
 }
 
 // DTO để cập nhật bài tập
