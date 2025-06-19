@@ -8,7 +8,7 @@ import { UserGrowthQueryDto } from './statistics.dto';
 export class StatisticsController {
   constructor(private readonly statisticsService: StatisticsService) {}
 
-  @Get('user_growth')
+  @Get('user-growth')
   @ApiOperation({ summary: 'Lấy dữ liệu tăng trưởng người dùng' })
   async getUserGrowth(@Query() query: UserGrowthQueryDto) {
     return await this.statisticsService.getUserGrowth(query.months);

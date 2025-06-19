@@ -14,31 +14,27 @@ export class StatisticsService {
     try {
       const startDate = new Date();
       startDate.setMonth(startDate.getMonth() - months);
-  
-      const monthlyData = await this.userRepository.query(
-        `
-        SELECT
-          to_char(months.month, 'YYYY-MM') AS date,
-          SUM(months.count) OVER (ORDER BY months.month) AS value
-        FROM (
-          SELECT
-            DATE_TRUNC('month', created_date) AS month,
-            COUNT(*) AS count
-          FROM users
-          WHERE created_date >= $1
-          GROUP BY DATE_TRUNC('month', created_date)
-        ) AS months
-        ORDER BY months.month
-        `,
-        [startDate]
-      );
-  
+
+      // Lấy dữ liệu tăng trưởng người dùng theo tháng bằng QueryBuilder
+      const monthlyData = await this.userRepository
+        .createQueryBuilder('user')
+        .select("TO_CHAR(DATE_TRUNC('month', user.created_date), 'YYYY-MM')", 'date')
+        .addSelect('COUNT(*)', 'count')
+        .addSelect(
+          `SUM(COUNT(*)) OVER (ORDER BY DATE_TRUNC('month', user.created_date))`,
+          'value'
+        )
+        .where('user.created_date >= :startDate', { startDate })
+        .groupBy("DATE_TRUNC('month', user.created_date)")
+        .orderBy("DATE_TRUNC('month', user.created_date)")
+        .getRawMany();
+
       const totalNewUsers = await this.userRepository
         .createQueryBuilder('user')
         .select('COUNT(*)', 'total')
         .where('user.created_date >= :startDate', { startDate })
         .getRawOne();
-  
+
       return {
         code: 0,
         message: 'Lấy dữ liệu tăng trưởng người dùng thành công',

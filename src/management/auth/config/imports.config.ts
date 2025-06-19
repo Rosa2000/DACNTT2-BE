@@ -10,6 +10,7 @@ import {
   UserGroup
 } from "src/management/user_groups/user_group.entity";
 import { Status } from "src/management/common/status/entities/status.entity";
+import { UserInformation } from "src/management/users/user_management.entity";
 
 export const UserAuthenticateManagementImports = [
   TypeOrmModule.forFeature([
@@ -19,6 +20,7 @@ export const UserAuthenticateManagementImports = [
     AddUserInformation,
     GroupRole,
     Status,
-    UserGroup
+    UserGroup,
+    UserInformation
   ])
 ];

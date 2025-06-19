@@ -17,6 +17,6 @@ export class UserAuthenticateModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(VerifyLoginMiddleware)
-      .forRoutes({ path: "/verify_login", method: RequestMethod.ALL }); // Apply globally or specify routes as needed
+      .forRoutes({ path: "/v1/auth/verify-login", method: RequestMethod.ALL });
   }
 }
