@@ -9,12 +9,15 @@ import {
   Query,
   Req,
   Res,
-  UseGuards
+  UseGuards,
+  Param,
+  Patch
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiTags
 } from "@nestjs/swagger";
@@ -33,123 +36,13 @@ import {
   UserLessonResponseDto
 } from "./lessons.dto";
 
-@Controller("/v1/lesson")
+@Controller("/v1/lessons")
 @ApiTags("API quản lý và tương tác bài học")
-export class LessonController {
-  constructor(private readonly lessonService: LessonsService) {}
+export class LessonsController {
+  constructor(private readonly lessonService: LessonsService) { }
 
-  @Post("/add_lesson")
-  @ApiOperation({ summary: "Thêm bài học mới" })
-  @ApiBody({ type: CreateLessonDto })
-  @UseGuards(VerifyLoginMiddleware)
-  @ApiBearerAuth()
-  async handleAddLesson(
-    @Body() addRequest: CreateLessonDto,
-    @Req() req: any,
-    @Res() res: any
-  ): Promise<any> {
-    try {
-      const handleAddLesson = await this.lessonService.createLesson(addRequest);
-
-      return res.status(HttpStatus.OK).json({
-        code: 0,
-        message: responseMessage.success,
-        data: handleAddLesson
-      });
-    } catch (error) {
-      console.log("error", error);
-      return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json({ code: -5, message: responseMessage.serviceError });
-    }
-  }
-
-  @Put("/edit_lesson")
-  @ApiOperation({ summary: "Thay đổi thông tin bài học" })
-  @ApiBody({ type: UpdateLessonDto })
-  @ApiQuery({ type: IdLessonDto })
-  @UseGuards(VerifyLoginMiddleware)
-  @ApiBearerAuth()
-  async handleEditLesson(
-    @Query() dataQuery: IdLessonDto,
-    @Body() editRequest: UpdateLessonDto,
-    @Req() req: any,
-    @Res() res: any
-  ): Promise<any> {
-    try {
-      const id = Number(dataQuery.id);
-      const handleChangeLesson = await this.lessonService.updateLesson(
-        id,
-        editRequest
-      );
-      if (handleChangeLesson.code == 0) {
-        return res.status(HttpStatus.OK).json({
-          ...handleChangeLesson
-        });
-      } else {
-        return res.status(HttpStatus.OK).json({
-          code: handleChangeLesson.code,
-          message: handleChangeLesson.message
-        });
-      }
-    } catch (error) {
-      return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json({ code: -5, message: responseMessage.serviceError });
-    }
-  }
-
-  @Delete("/delete_lesson")
-  @ApiOperation({ summary: "Xóa bài học" })
-  @ApiQuery({ type: IdLessonDto })
-  @UseGuards(VerifyLoginMiddleware)
-  @ApiBearerAuth()
-  async handleDeleteLesson(
-    @Query() dataQuery: IdLessonDto,
-    @Req() req: any,
-    @Res() res: any
-  ): Promise<any> {
-    try {
-      const handleDeleteLesson = await this.lessonService.deleteLesson(
-        dataQuery.id
-      );
-      return res.status(HttpStatus.OK).json({
-        code: handleDeleteLesson.code,
-        message: handleDeleteLesson.message
-      });
-    } catch (error) {
-      return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json({ code: -5, message: responseMessage.serviceError });
-    }
-  }
-
-  @Post("/restore_lesson")
-  @ApiOperation({ summary: "Khôi phục bài học" })
-  @ApiQuery({ type: IdLessonDto })
-  @UseGuards(VerifyLoginMiddleware)
-  @ApiBearerAuth()
-  async handleRestoreLesson(
-    @Query() dataQuery: IdLessonDto,
-    @Req() req: any,
-    @Res() res: any
-  ): Promise<any> {
-    try {
-      const handleRestoreLesson = await this.lessonService.restoreLesson(
-        dataQuery.id
-      );
-      return res.status(HttpStatus.OK).json({
-        code: handleRestoreLesson.code,
-        message: handleRestoreLesson.message
-      });
-    } catch (error) {
-      return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json({ code: -5, message: responseMessage.serviceError });
-    }
-  }
-
-  @Get("/data_lessons")
+  // Lấy danh sách bài học
+  @Get("/")
   @ApiOperation({ summary: "Lấy danh sách bài học" })
   @ApiQuery({ type: GetDataLessonDto })
   @UseGuards(VerifyLoginMiddleware)
@@ -192,6 +85,117 @@ export class LessonController {
     }
   }
 
+  // Thêm bài học mới
+  @Post("/")
+  @ApiOperation({ summary: "Thêm bài học mới" })
+  @ApiBody({ type: CreateLessonDto })
+  @UseGuards(VerifyLoginMiddleware)
+  @ApiBearerAuth()
+  async handleAddLesson(
+    @Body() addRequest: CreateLessonDto,
+    @Req() req: any,
+    @Res() res: any
+  ): Promise<any> {
+    try {
+      const handleAddLesson = await this.lessonService.createLesson(addRequest);
+
+      return res.status(HttpStatus.OK).json({
+        code: 0,
+        message: responseMessage.success,
+        data: handleAddLesson
+      });
+    } catch (error) {
+      console.log("error", error);
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ code: -5, message: responseMessage.serviceError });
+    }
+  }
+
+  // Thay đổi thông tin bài học
+  @Put("/:id")
+  @ApiOperation({ summary: "Thay đổi thông tin bài học" })
+  @ApiBody({ type: UpdateLessonDto })
+  @UseGuards(VerifyLoginMiddleware)
+  @ApiBearerAuth()
+  async handleEditLesson(
+    @Param("id") id: number,
+    @Body() editRequest: UpdateLessonDto,
+    @Req() req: any,
+    @Res() res: any
+  ): Promise<any> {
+    try {
+      const handleChangeLesson = await this.lessonService.updateLesson(
+        id,
+        editRequest
+      );
+      if (handleChangeLesson.code == 0) {
+        return res.status(HttpStatus.OK).json({
+          ...handleChangeLesson
+        });
+      } else {
+        return res.status(HttpStatus.OK).json({
+          code: handleChangeLesson.code,
+          message: handleChangeLesson.message
+        });
+      }
+    } catch (error) {
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ code: -5, message: responseMessage.serviceError });
+    }
+  }
+
+  @Delete("/:id")
+  @ApiOperation({ summary: "Xóa bài học" })
+  @ApiQuery({ type: IdLessonDto })
+  @UseGuards(VerifyLoginMiddleware)
+  @ApiBearerAuth()
+  async handleDeleteLesson(
+    @Param("id") id: number,
+    @Req() req: any,
+    @Res() res: any
+  ): Promise<any> {
+    try {
+      const handleDeleteLesson = await this.lessonService.deleteLesson(
+        id
+      );
+      return res.status(HttpStatus.OK).json({
+        code: handleDeleteLesson.code,
+        message: handleDeleteLesson.message
+      });
+    } catch (error) {
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ code: -5, message: responseMessage.serviceError });
+    }
+  }
+
+  // Khôi phục bài học
+  @Patch("/restore/:id")
+  @ApiOperation({ summary: "Khôi phục bài học" })
+  @ApiParam({ name: "id", required: true, description: "ID bài học cần khôi phục" })
+  @UseGuards(VerifyLoginMiddleware)
+  @ApiBearerAuth()
+  async handleRestoreLesson(
+    @Param("id") id: number,
+    @Req() req: any,
+    @Res() res: any
+  ): Promise<any> {
+    try {
+      const handleRestoreLesson = await this.lessonService.restoreLesson(id);
+      return res.status(HttpStatus.OK).json({
+        code: handleRestoreLesson.code,
+        message: handleRestoreLesson.message
+      });
+    } catch (error) {
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ code: -5, message: responseMessage.serviceError });
+    }
+  }
+
+  // API học tập
   @Post("/study")
   @ApiOperation({ summary: "API học tập" })
   @ApiQuery({ type: UserLessonDto })
@@ -213,14 +217,14 @@ export class LessonController {
         ...handleStudy
       });
     } catch (error) {
-      console.log("lỗi", error); 
       return res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ code: -5, message: responseMessage.serviceError });
     }
   }
 
-  @Get("/user_lessons")
+  // Lấy thông tin học tập của người dùng
+  @Get("/user-lessons")
   @ApiOperation({ summary: "Lấy thông tin học tập của người dùng" })
   @UseGuards(VerifyLoginMiddleware)
   @ApiBearerAuth()
@@ -249,4 +253,3 @@ export class LessonController {
     }
   }
 }
-

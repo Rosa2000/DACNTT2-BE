@@ -1,19 +1,24 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
+  Entity,
+  JoinColumn,
   ManyToOne,
-  JoinColumn
+  PrimaryGeneratedColumn
 } from "typeorm";
-import { UserInformation } from "../users/user_management.entity";
+import { Lesson } from "../lessons/lessons.entity";
+import { UserInformation } from '../users/user_management.entity';
 import { Status } from "../common/status/entities/status.entity";
-@Entity("lessons")
-export class Lesson {
+
+@Entity("exercises")
+export class Exercise {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: "varchar", length: 250, nullable: false })
   title: string;
+
+  @Column({ type: "text", nullable: true })
+  description: string;
 
   @Column({ type: "varchar", length: 50, nullable: false })
   type: string;
@@ -21,14 +26,21 @@ export class Lesson {
   @Column({ type: "text", nullable: false })
   content: string;
 
-  @Column()
-  category: string;
+  @Column({ type: "jsonb", nullable: true })
+  options: { id: string; text: string }[];
+
+  @ManyToOne(() => Lesson)
+  @JoinColumn({ name: "lesson_id" })
+  lesson: Lesson;
 
   @Column()
-  status_id: number;
+  lesson_id: number;
+
+  @Column({ type: "text", nullable: false })
+  correct_answer: string;
 
   @Column()
-  level: number;
+  status_id: number; // 1: online, 2: offline
 
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   created_date: Date;
@@ -38,10 +50,13 @@ export class Lesson {
 
   @Column({ type: "timestamp", nullable: true })
   deleted_date: Date;
+
+  @Column({ type: "varchar", length: 50, nullable: true })
+  duration: string;
 }
 
-@Entity("user_lessons")
-export class UserLesson {
+@Entity("user_exercises")
+export class UserExercise {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -53,11 +68,11 @@ export class UserLesson {
   user: UserInformation;
 
   @Column()
-  lesson_id: number;
+  exercise_id: number;
 
-  @ManyToOne(() => Lesson)
-  @JoinColumn({ name: "lesson_id" })
-  lesson: Lesson;
+  @ManyToOne(() => Exercise)
+  @JoinColumn({ name: "exercise_id" })
+  exercise: Exercise;
 
   @Column()
   status_id: number;
@@ -65,6 +80,15 @@ export class UserLesson {
   @ManyToOne(() => Status)
   @JoinColumn({ name: "status_id" })
   status: Status;
+
+  @Column({ type: "text", nullable: true })
+  user_answer: string;
+
+  @Column({ type: "numeric", precision: 5, scale: 2, nullable: true })
+  score: number;
+
+  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  created_date: Date;
 
   @Column({ type: "timestamp", nullable: true })
   modified_date: Date;

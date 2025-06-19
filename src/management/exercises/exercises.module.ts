@@ -1,34 +1,36 @@
 import { MiddlewareConsumer, Module, RequestMethod } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { Lesson, UserLesson } from "./lessons.entity";
 import { VerifyLoginMiddleware } from "src/middleware/verify_user.middleware";
-import { LessonsController } from "./lessons.controller";
-import { LessonsService } from "./lessons.service";
+
 import { UserVerifyInformation } from "../auth/auth.entity";
 import { Status } from "../common/status/entities/status.entity";
-import { UserExercise } from "../exercises/exercises.entity";
+import { Exercise, UserExercise } from "./exercises.entity";
+import { ExerciseController } from "./exercises.controller";
+import { ExercisesService } from "./exercises.service";
+import { Lesson, UserLesson } from "../lessons/lessons.entity";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      UserExercise,
+      Exercise,
       Lesson,
       UserLesson,
       UserVerifyInformation,
-      Status,
-      UserExercise
+      Status
     ])
   ],
-  controllers: [LessonsController],
-  providers: [LessonsService, VerifyLoginMiddleware]
+  controllers: [ExerciseController],
+  providers: [ExercisesService, VerifyLoginMiddleware]
 })
-export class LessonsModule {
+export class ExercisesModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(VerifyLoginMiddleware).forRoutes({
-      path: "/v1/lessons",
+      path: "/v1/exercise",
       method: RequestMethod.ALL
     },
     {
-      path: "/v1/lessons/*",
+      path: "/v1/exercise/*",
       method: RequestMethod.ALL
     });
   }

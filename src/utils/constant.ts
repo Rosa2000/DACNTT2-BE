@@ -33,11 +33,13 @@ export const responseMessage = {
   serviceError: "Đã có lỗi xảy ra! Vui lòng thử lại sau.",
   notFound: "Không tìm thấy thông tin",
   duplicateValue: "Giá trị bị trùng lặp",
-  existedUsername: "Username/Email này đã tồn tại",
+  existedUsername: "Username/Email này đã được sử dụng",
   missedUsername: "Trường email/username bị thiếu",
-  incorrectPassword: "Password không đúng",
+  incorrectPassword: "Mật khẩu không đúng",
   incorrectUsername: "Tên đăng nhập không đúng hoặc không tồn tại",
-  existValue: "Giá trị đã tồn tại"
+  existValue: "Giá trị đã tồn tại",
+  forbidden: "Không có quyền truy cập",
+  invalidToken: "Token không hợp lệ hoặc đã hết hạn"
 };
 
 export const systemSite = "CC417C14-856C-4E88-A9A5-115E17CF1717";

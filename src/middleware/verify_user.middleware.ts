@@ -4,7 +4,7 @@ import * as dotenv from "dotenv";
 import { NextFunction } from "express";
 import * as jwt from "jsonwebtoken";
 import { Status } from "src/management/common/status/entities/status.entity";
-import { UserVerifyInformation } from "src/management/users/entities/user_authenticate/user_authenticate.entity";
+import { UserVerifyInformation } from "src/management/auth/auth.entity";
 import { responseMessage } from "src/utils/constant";
 import { Repository } from "typeorm";
 dotenv.config();

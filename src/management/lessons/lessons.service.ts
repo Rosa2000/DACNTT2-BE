@@ -8,7 +8,7 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Brackets, Repository } from "typeorm";
 import { Lesson, UserLesson } from "./lessons.entity";
-import { UserExercise } from "../exercise/exercise.entity";
+import { UserExercise } from "../exercises/exercises.entity";
 import {
   CreateLessonDto,
   LessonResponseDto,
