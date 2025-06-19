@@ -88,9 +88,7 @@ export class UserAuthenticateService {
         accessToken
       };
     } catch (error) {
-      console.error("error1", error);
       if ( error instanceof BadRequestException || error instanceof UnauthorizedException) {
-        console.log("error2", error);
         throw error;
       } else {
         throw new InternalServerErrorException({
@@ -159,7 +157,6 @@ export class UserAuthenticateService {
       await this.userGroupRepository.save(newUserGroup);
       return savedUser;
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException({
         code: -5,
         message: responseMessage.serviceError
@@ -236,12 +233,11 @@ async handleForgotPassword(email: string): Promise<any> {
     if (user) {
       const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: '15m' });
       await this.mailerService.sendResetPasswordMail(user.email, token);
-      console.log(`Đã gửi mail reset cho: ${user.email} với token: ${token}`);
     }
 
     return {
       code: 0,
-      message: 'Nếu email tồn tại, hệ thống sẽ gửi hướng dẫn khôi phục mật khẩu.',
+      message: 'Vui lòng kiểm tra email, hệ thống sẽ gửi hướng dẫn khôi phục mật khẩu.',
     };
   } catch (error) {
     console.error(error);

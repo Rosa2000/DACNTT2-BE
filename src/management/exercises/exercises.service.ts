@@ -117,7 +117,6 @@ export class ExercisesService {
         totalPages: totalPages
       };
     } catch (error) {
-      console.log('error:', error);
       throw new InternalServerErrorException({
         code: -5,
         message: responseMessage.serviceError

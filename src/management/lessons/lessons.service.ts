@@ -124,11 +124,9 @@ export class LessonsService {
           const lessonScores = userExercises
             .filter(ex => ex.exercise?.lesson_id === lesson.id)
             .map(ex => Number(ex.score));
-          console.log('lessonScores:', lessonScores);
           const score = lessonScores.length
             ? Math.round(lessonScores.reduce((sum, s) => sum + s, 0))
             : null;
-          console.log('score:', score);
   
           return {
             ...lesson,
@@ -247,11 +245,9 @@ export class LessonsService {
 
     try {
     const savedUserLesson = await this.userLessonRepository.save(userLesson);
-    console.log('savedUserLesson:', savedUserLesson);
     const result = await this.userLessonRepository.findOne({
       where: { id: savedUserLesson.id }
     });
-    console.log('result:', result);
     return new UserLessonResponseDto(result);
     } catch (error) {
       console.error('Lỗi khi lưu userLesson:', error);

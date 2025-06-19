@@ -96,7 +96,6 @@ export class ExerciseController {
         });
       }
     } catch (error) {
-      console.log(error);
       return res
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .json({ code: -5, message: responseMessage.serviceError });

@@ -109,7 +109,6 @@ export class UserGroupService {
 
       return newGroupRole;
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException({
         code: -5,
         message: responseMessage.serviceError
@@ -148,7 +147,6 @@ export class UserGroupService {
       });
       return updateGroupRole;
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException({
         code: -5,
         message: responseMessage.serviceError
@@ -176,7 +174,6 @@ export class UserGroupService {
       });
       return existGroupRole;
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException({
         code: -5,
         message: responseMessage.serviceError

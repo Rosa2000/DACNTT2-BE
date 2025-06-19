@@ -81,7 +81,6 @@ export class UserGroupManagmentController {
   }
 
   private handleError(res: Response, error: any) {
-    console.log(error);
     if (error.response.status !== 500) {
       return res.status(HttpStatus.OK).json({
         code: error.response.code,
