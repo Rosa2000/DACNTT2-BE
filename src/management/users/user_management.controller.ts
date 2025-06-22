@@ -282,13 +282,13 @@ export class UserManagmentController {
         return this.respondWithBadRequest("change_password", req, res);
       }
 
-      const isAdmin = req.userData.user_group?.name === 'admin';
-      if (!this.validateUserAccess(req.userData.id, idUser.id, isAdmin)) {
-        return this.sendResponse(res, HttpStatus.FORBIDDEN, {
-          code: -4,
-          message: "Bạn không có quyền thực hiện thao tác này"
-        });
-      }
+      // const isAdmin = req.userData.user_group?.name === 'admin';
+      // if (!this.validateUserAccess(req.userData.id, idUser.id, isAdmin)) {
+      //   return this.sendResponse(res, HttpStatus.FORBIDDEN, {
+      //     code: -4,
+      //     message: "Bạn không có quyền thực hiện thao tác này"
+      //   });
+      // }
 
       await this.userService.changePassword(idUser.id, changePasswordData);
       

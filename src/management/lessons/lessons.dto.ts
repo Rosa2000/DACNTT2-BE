@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsNumber, IsString } from "class-validator";
+import { IsNumber, IsString, IsOptional, Min, Max } from "class-validator";
 
 export class GetDataLessonDto {
   @IsNumber()
@@ -21,6 +21,10 @@ export class GetDataLessonDto {
   @IsString()
   @ApiPropertyOptional({ description: "Lọc theo danh mục", required: false })
   category?: string;
+
+  @IsString()
+  @ApiPropertyOptional({ description: "Lọc theo loại bài học", required: false })
+  type?: string;
 
   @IsNumber()
   @ApiPropertyOptional({ description: "Lọc theo cấp độ", required: false })
@@ -55,6 +59,13 @@ export class CreateLessonDto {
   @IsNumber()
   @ApiProperty({ description: "Cấp độ bài học" })
   level?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(480) // Tối đa 8 giờ
+  @ApiPropertyOptional({ description: "Thời gian làm bài nếu là bài kiểm tra (phút)", example: 30 })
+  duration?: number;
 }
 
 export class UpdateLessonDto {
@@ -77,6 +88,13 @@ export class UpdateLessonDto {
   @IsNumber()
   @ApiPropertyOptional({ description: "Trạng thái" })
   status_id?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(480)
+  @ApiPropertyOptional({ description: "Thời gian làm bài nếu là bài kiểm tra (phút)", example: 30 })
+  duration?: number;
 }
 
 export class IdLessonDto {
@@ -114,6 +132,10 @@ export class LessonResponseDto {
   @ApiPropertyOptional({ description: "Cấp độ bài học" })
   level?: number;
 
+  @IsNumber()
+  @ApiPropertyOptional({ description: "Thời gian học ước tính (phút)" })
+  duration?: number;
+
   created_date: Date;
   modified_date: Date;
   deleted_date: Date;
@@ -126,6 +148,7 @@ export class LessonResponseDto {
     this.status_id = lesson.status;
     this.category = lesson.category;
     this.level = lesson.level;
+    this.duration = lesson.duration;
     this.created_date = lesson.created_date;
     this.modified_date = lesson.modified_date;
     this.deleted_date = lesson.deleted_date;

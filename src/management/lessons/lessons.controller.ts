@@ -61,6 +61,7 @@ export class LessonsController {
       const filters = dataQuery.filters || "";
       const status_id = dataQuery.status_id;
       const category = dataQuery.category;
+      const type = dataQuery.type;
       const level = dataQuery.level;
 
       const lessonInformation = await this.lessonService.getDataLessons(
@@ -70,6 +71,7 @@ export class LessonsController {
         filters,
         id,
         category,
+        type,
         level,
         status_id
       );

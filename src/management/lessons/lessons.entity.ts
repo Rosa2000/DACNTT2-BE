@@ -30,6 +30,9 @@ export class Lesson {
   @Column()
   level: number;
 
+  @Column({ type: "int", nullable: true, comment: "Thời gian học ước tính (phút)" })
+  duration: number;
+
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   created_date: Date;
 
