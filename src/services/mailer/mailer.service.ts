@@ -11,7 +11,7 @@ export class CustomMailerService {
    * @param token JWT token để reset mật khẩu
    */
   async sendResetPasswordMail(to: string, token: string): Promise<void> {
-    const resetLink = `https://ezenglish.io.vn/reset-password?token=${token}`;
+    const resetLink = `https://ezenglish.io.vn/auth/reset-password?token=${token}`;
     await this.mailerService.sendMail({
       to,
       subject: 'Đặt lại mật khẩu - EZEnglish',
